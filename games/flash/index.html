@@ -11,12 +11,13 @@
   <script src="ruffle.js"></script>
   <script>
     var defaultGame = (new URLSearchParams(window.location.search)).get('game');
-    if (defaultGame.charAt(defaultGame.length - 1) == '/')
-      defaultGame = defaultGame.substring(0, defaultGame.length - 1);
     if (document.getElementsByTagName('base').length > 0 && !window.location.href.includes(document.getElementsByTagName('base')[0].href)) {
       const gameUrl = new URL(document.getElementsByTagName('base')[0].href);
       const gameUrlParams = (new URLSearchParams(gameUrl.search)).get('game');
       defaultGame = gameUrlParams || defaultGame;
+      if (defaultGame.charAt(defaultGame.length - 1) == '/') {
+        defaultGame = defaultGame.substring(0, defaultGame.length - 1);
+      }
     }
     if (!defaultGame) {
       /*var fileInput = document.createElement('input');
