@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dingus Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #111318;
+    --surface: #1a1d24;
+    --card: #1f2330;
+    --border: #2e3245;
+    --brand: #d4851a;
+    --brand-glow: rgba(212,133,26,0.15);
+    --text: #dde1f0;
+    --muted: #7a80a0;
+    --accent: #5b8ef0;
+    --green: #4cbb7a;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ── HOMEPAGE ── */
+  #home-view { display: block; }
+  #game-view  { display: none; }
+
+  /* NAV */
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Fredoka One', cursive;
+    font-size: 26px;
+    color: var(--brand);
+    letter-spacing: 0.5px;
+    user-select: none;
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .search-wrap {
+    position: relative;
+  }
+
+  .search-wrap input {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 7px 16px 7px 36px;
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    width: 200px;
+    outline: none;
+    transition: border-color 0.2s, width 0.2s;
+  }
+
+  .search-wrap input:focus {
+    border-color: var(--accent);
+    width: 240px;
+  }
+
+  .search-wrap input::placeholder { color: var(--muted); }
+
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 14px;
+    pointer-events: none;
+  }
+
+  /* CATEGORIES */
+  .categories {
+    max-width: 1100px;
+    margin: 1.5rem auto 0;
+    padding: 0 2rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .cat-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .cat-btn:hover, .cat-btn.active {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: #111;
+  }
+
+  /* SECTION */
+  .section {
+    max-width: 1100px;
+    margin: 2.5rem auto 0;
+    padding: 0 2rem;
+  }
+
+  .section-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* GAME GRID */
+  .game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.25rem;
+    padding-bottom: 4rem;
+  }
+
+  .game-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.2s, box-shadow 0.2s;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .game-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--brand);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4), 0 0 0 1px var(--brand);
+  }
+
+  .game-card:hover .play-overlay {
+    opacity: 1;
+  }
+
+  .card-thumb {
+    aspect-ratio: 4/3;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* CSS art for games without real thumbnails */
+  .thumb-flappy {
+    background: linear-gradient(180deg, #4ec0ca 0%, #4ec0ca 55%, #ded895 55%, #ded895 75%, #5a8c2e 75%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 52px;
+  }
+
+  .thumb-snake {
+    background: #0d1f0d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 52px;
+  }
+
+  .thumb-2048 {
+    background: #faf8ef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fredoka One', cursive;
+    font-size: 42px;
+    color: #776e65;
+  }
+
+  .thumb-tetris {
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 52px;
+  }
+
+  .play-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .play-circle {
+    width: 48px;
+    height: 48px;
+    background: var(--brand);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    padding-left: 3px;
+  }
+
+  .card-info {
+    padding: 0.75rem 0.9rem;
+  }
+
+  .card-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-tag {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── GAME VIEW ── */
+  #game-view {
+    min-height: 100vh;
+    flex-direction: column;
+  }
+
+  .game-nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    height: 60px;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .back-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 16px;
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .back-btn:hover {
+    border-color: var(--brand);
+    background: var(--brand-glow);
+  }
+
+  .game-nav .logo { font-size: 22px; }
+
+  .game-title-nav {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+
+  .game-title-nav span { color: var(--text); }
+
+  /* Game frame area */
+  .game-stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 2rem;
+    min-height: calc(100vh - 60px);
+  }
+
+  .game-frame-wrap {
+    position: relative;
+    background: #000;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    width: min(820px, 100%);
+    aspect-ratio: 4/3;
+  }
+
+  .game-frame-wrap iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+
+  /* Maximize button */
+  .maximize-btn {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(0,0,0,0.7);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    z-index: 10;
+    color: white;
+    font-size: 14px;
+  }
+
+  .maximize-btn:hover {
+    background: var(--brand);
+    border-color: var(--brand);
+  }
+
+  /* Fullscreen state */
+  .game-frame-wrap.fullscreen {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    aspect-ratio: unset;
+    border-radius: 0;
+    border: none;
+    z-index: 9999;
+  }
+
+  /* Loading state */
+  .frame-loading {
+    position: absolute;
+    inset: 0;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  .frame-loading.hidden { opacity: 0; }
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--brand);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 700;
+  }
+
+  /* No results */
+  .no-results {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--muted);
+    display: none;
+  }
+
+  .no-results .emoji { font-size: 48px; margin-bottom: 1rem; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HOME VIEW ═══════════════ -->
+<div id="home-view">
+  <nav>
+    <div class="logo">Dingus Hub</div>
+    <div class="nav-right">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="Search games..." oninput="filterGames()">
+      </div>
+    </div>
+  </nav>
+
+  <div class="categories">
+    <button class="cat-btn active" onclick="filterCategory('all', this)">All</button>
+    <button class="cat-btn" onclick="filterCategory('arcade', this)">Arcade</button>
+    <button class="cat-btn" onclick="filterCategory('puzzle', this)">Puzzle</button>
+    <button class="cat-btn" onclick="filterCategory('classic', this)">Classic</button>
+  </div>
+
+  <div class="section">
+    <div class="section-label">All Games</div>
+    <div class="game-grid" id="game-grid"></div>
+    <div class="no-results" id="no-results">
+      <div class="emoji">🎮</div>
+      <div>No games found</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ GAME VIEW ═══════════════ -->
+<div id="game-view">
+  <nav class="game-nav">
+    <button class="back-btn" onclick="goHome()">← Back</button>
+    <div class="logo">Dingus Hub</div>
+    <div class="game-title-nav">Playing: <span id="game-title-nav"></span></div>
+  </nav>
+
+  <div class="game-stage">
+    <div class="game-frame-wrap" id="game-frame-wrap">
+      <div class="frame-loading" id="frame-loading">
+        <div class="spinner"></div>
+        <div class="loading-text">Loading game...</div>
+      </div>
+      <iframe id="game-iframe" src="" allowfullscreen></iframe>
+      <button class="maximize-btn" id="maximize-btn" onclick="toggleFullscreen()" title="Fullscreen">⤢</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const BASE = 'https://wudzel.github.io/Dingushub/games/';
+
+  const GAMES = [
+    { id:'10-minutes-till-dawn',         title:'10 Minutes Till Dawn',        tag:'Arcade',   category:'arcade'  },
+    { id:'1v1-lol',                       title:'1v1.LOL',                     tag:'Arcade',   category:'arcade'  },
+    { id:'2048',                          title:'2048',                        tag:'Puzzle',   category:'puzzle'  },
+    { id:'a-dark-room',                   title:'A Dark Room',                 tag:'Classic',  category:'classic' },
+    { id:'abandoned',                     title:'Abandoned',                   tag:'Arcade',   category:'arcade'  },
+    { id:'abandoned-2',                   title:'Abandoned 2',                 tag:'Arcade',   category:'arcade'  },
+    { id:'ages-of-conflict',              title:'Ages of Conflict',            tag:'Classic',  category:'classic' },
+    { id:'aground',                       title:'Aground',                     tag:'Classic',  category:'classic' },
+    { id:'amidst-the-sky',                title:'Amidst the Sky',              tag:'Arcade',   category:'arcade'  },
+    { id:'another-gentlemans-adventure',  title:"Another Gentleman's Adv.",    tag:'Classic',  category:'classic' },
+    { id:'awesome-tanks',                 title:'Awesome Tanks',               tag:'Arcade',   category:'arcade'  },
+    { id:'awesome-tanks-2',               title:'Awesome Tanks 2',             tag:'Arcade',   category:'arcade'  },
+    { id:'babel-tower',                   title:'Babel Tower',                 tag:'Puzzle',   category:'puzzle'  },
+    { id:'basket-random',                 title:'Basket Random',               tag:'Arcade',   category:'arcade'  },
+    { id:'basketball-stars',              title:'Basketball Stars',            tag:'Arcade',   category:'arcade'  },
+    { id:'bit-life',                      title:'BitLife',                     tag:'Classic',  category:'classic' },
+    { id:'boxing-random',                 title:'Boxing Random',               tag:'Arcade',   category:'arcade'  },
+    { id:'brawl-stars-project-laser',     title:'Brawl Stars: Project Laser',  tag:'Arcade',   category:'arcade'  },
+    { id:'breaklock',                     title:'Breaklock',                   tag:'Puzzle',   category:'puzzle'  },
+    { id:'chrome-dino',                   title:'Chrome Dino',                 tag:'Arcade',   category:'arcade'  },
+    { id:'clicker-heroes',                title:'Clicker Heroes',              tag:'Classic',  category:'classic' },
+    { id:'clicker-heroes-updated',        title:'Clicker Heroes Updated',      tag:'Classic',  category:'classic' },
+    { id:'conways-game-of-life',          title:"Conway's Game of Life",       tag:'Classic',  category:'classic' },
+    { id:'cookie-clicker',                title:'Cookie Clicker',              tag:'Classic',  category:'classic' },
+    { id:'core-ball',                     title:'Core Ball',                   tag:'Arcade',   category:'arcade'  },
+    { id:'crossy-road',                   title:'Crossy Road',                 tag:'Arcade',   category:'arcade'  },
+    { id:'cut-the-rope',                  title:'Cut the Rope',                tag:'Puzzle',   category:'puzzle'  },
+    { id:'doge-miner',                    title:'Doge Miner',                  tag:'Classic',  category:'classic' },
+    { id:'doodle-jump',                   title:'Doodle Jump',                 tag:'Arcade',   category:'arcade'  },
+    { id:'drift-boss',                    title:'Drift Boss',                  tag:'Arcade',   category:'arcade'  },
+    { id:'drive-mad',                     title:'Drive Mad',                   tag:'Arcade',   category:'arcade'  },
+    { id:'drive-mad-s',                   title:'Drive Mad S',                 tag:'Arcade',   category:'arcade'  },
+    { id:'duck-life-4',                   title:'Duck Life 4',                 tag:'Arcade',   category:'arcade'  },
+    { id:'dune',                          title:'Dune',                        tag:'Classic',  category:'classic' },
+    { id:'eggy-car',                      title:'Eggy Car',                    tag:'Arcade',   category:'arcade'  },
+    { id:'evowars',                       title:'EvoWars.io',                  tag:'Arcade',   category:'arcade'  },
+    { id:'family-feud',                   title:'Family Feud',                 tag:'Classic',  category:'classic' },
+    { id:'fireboy-and-watergirl',         title:'Fireboy and Watergirl',       tag:'Classic',  category:'classic' },
+    { id:'fireboy-and-watergirl-2',       title:'Fireboy and Watergirl 2',     tag:'Classic',  category:'classic' },
+    { id:'fireboy-and-watergirl-3',       title:'Fireboy and Watergirl 3',     tag:'Classic',  category:'classic' },
+    { id:'fireboy-and-watergirl-4',       title:'Fireboy and Watergirl 4',     tag:'Classic',  category:'classic' },
+    { id:'five-nights-at-epsteins',       title:"Five Nights at Epstein's",    tag:'Arcade',   category:'arcade'  },
+    { id:'flappy-bird',                   title:'Flappy Bird',                 tag:'Arcade',   category:'arcade'  },
+    { id:'friday-night-funkin',           title:'Friday Night Funkin\'',       tag:'Arcade',   category:'arcade'  },
+    { id:'geometry-dash-lite',            title:'Geometry Dash Lite',          tag:'Arcade',   category:'arcade'  },
+    { id:'geometry-dash-remastered',      title:'Geometry Dash Remastered',    tag:'Arcade',   category:'arcade'  },
+    { id:'geometry-vibes',                title:'Geometry Vibes',              tag:'Arcade',   category:'arcade'  },
+    { id:'geometry-vibes-monster',        title:'Geometry Vibes Monster',      tag:'Arcade',   category:'arcade'  },
+    { id:'geometry-vibes-x-ball',         title:'Geometry Vibes X-Ball',       tag:'Arcade',   category:'arcade'  },
+    { id:'getaway-shootout',              title:'Getaway Shootout',            tag:'Arcade',   category:'arcade'  },
+    { id:'gons-io',                       title:'Gons.io',                     tag:'Arcade',   category:'arcade'  },
+    { id:'gunspin',                       title:'GunSpin',                     tag:'Arcade',   category:'arcade'  },
+    { id:'hextris',                       title:'Hextris',                     tag:'Puzzle',   category:'puzzle'  },
+    { id:'idle-breakout',                 title:'Idle Breakout',               tag:'Classic',  category:'classic' },
+    { id:'incremancer',                   title:'Incremancer',                 tag:'Classic',  category:'classic' },
+    { id:'lion-soldiers-vengeance',       title:'Lion Soldiers Vengeance',     tag:'Arcade',   category:'arcade'  },
+    { id:'maptroid',                      title:'Maptroid',                    tag:'Classic',  category:'classic' },
+    { id:'mario-game',                    title:'Mario Game',                  tag:'Classic',  category:'classic' },
+    { id:'monkey-mart',                   title:'Monkey Mart',                 tag:'Classic',  category:'classic' },
+    { id:'motox3m',                       title:'Moto X3M',                    tag:'Arcade',   category:'arcade'  },
+    { id:'n-gon',                         title:'N-Gon',                       tag:'Arcade',   category:'arcade'  },
+    { id:'n-step-steve-part-1',           title:'N-Step Steve Part 1',         tag:'Classic',  category:'classic' },
+    { id:'n-step-steve-part-2',           title:'N-Step Steve Part 2',         tag:'Classic',  category:'classic' },
+    { id:'ovo',                           title:'OvO',                         tag:'Arcade',   category:'arcade'  },
+    { id:'particle-clicker',              title:'Particle Clicker',            tag:'Classic',  category:'classic' },
+    { id:'pcraft',                        title:'PCraft',                      tag:'Classic',  category:'classic' },
+    { id:'planet-life',                   title:'Planet Life',                 tag:'Classic',  category:'classic' },
+    { id:'progress-knight-quest',         title:'Progress Knight Quest',       tag:'Classic',  category:'classic' },
+    { id:'progress-knight-reborn',        title:'Progress Knight Reborn',      tag:'Classic',  category:'classic' },
+    { id:'pull-of-war',                   title:'Pull of War',                 tag:'Arcade',   category:'arcade'  },
+    { id:'reach-the-core',                title:'Reach the Core',              tag:'Arcade',   category:'arcade'  },
+    { id:'restless-wing-syndrome',        title:'Restless Wing Syndrome',      tag:'Arcade',   category:'arcade'  },
+    { id:'retro-bowl',                    title:'Retro Bowl',                  tag:'Arcade',   category:'arcade'  },
+    { id:'retro-bowl-old',                title:'Retro Bowl (Old)',             tag:'Arcade',   category:'arcade'  },
+    { id:'rift-shift',                    title:'Rift Shift',                  tag:'Puzzle',   category:'puzzle'  },
+    { id:'rocket-league-2d',              title:'Rocket League 2D',            tag:'Arcade',   category:'arcade'  },
+    { id:'rooftop-snipers',               title:'Rooftop Snipers',             tag:'Arcade',   category:'arcade'  },
+    { id:'rookie-bowman',                 title:'Rookie Bowman',               tag:'Arcade',   category:'arcade'  },
+    { id:'run-3',                         title:'Run 3',                       tag:'Arcade',   category:'arcade'  },
+    { id:'run-3-beta',                    title:'Run 3 Beta',                  tag:'Arcade',   category:'arcade'  },
+    { id:'sabercut',                      title:'Sabercut',                    tag:'Arcade',   category:'arcade'  },
+    { id:'sandspiel',                     title:'Sandspiel',                   tag:'Classic',  category:'classic' },
+    { id:'scuba-bear',                    title:'Scuba Bear',                  tag:'Arcade',   category:'arcade'  },
+    { id:'shadow-fight',                  title:'Shadow Fight',                tag:'Arcade',   category:'arcade'  },
+    { id:'slice-master',                  title:'Slice Master',                tag:'Arcade',   category:'arcade'  },
+    { id:'slope',                         title:'Slope',                       tag:'Arcade',   category:'arcade'  },
+    { id:'smart-ball',                    title:'Smart Ball',                  tag:'Puzzle',   category:'puzzle'  },
+    { id:'smash-karts',                   title:'Smash Karts',                 tag:'Arcade',   category:'arcade'  },
+    { id:'soccer-random',                 title:'Soccer Random',               tag:'Arcade',   category:'arcade'  },
+    { id:'station-saturn',                title:'Station Saturn',              tag:'Arcade',   category:'arcade'  },
+    { id:'stickman-hook',                 title:'Stickman Hook',               tag:'Arcade',   category:'arcade'  },
+    { id:'subway-surfers',                title:'Subway Surfers',              tag:'Arcade',   category:'arcade'  },
+    { id:'subway-surfers-ny',             title:'Subway Surfers NY',           tag:'Arcade',   category:'arcade'  },
+    { id:'tanuki-sunset',                 title:'Tanuki Sunset',               tag:'Arcade',   category:'arcade'  },
+    { id:'temple-run-2',                  title:'Temple Run 2',                tag:'Arcade',   category:'arcade'  },
+    { id:'the-final-earth',               title:'The Final Earth',             tag:'Classic',  category:'classic' },
+    { id:'the-treasure',                  title:'The Treasure',                tag:'Classic',  category:'classic' },
+    { id:'there-is-no-game',              title:'There Is No Game',            tag:'Classic',  category:'classic' },
+    { id:'tic-tac-what',                  title:'Tic Tac What',                tag:'Puzzle',   category:'puzzle'  },
+    { id:'time-shooter',                  title:'Time Shooter',                tag:'Arcade',   category:'arcade'  },
+    { id:'time-shooter-3',                title:'Time Shooter 3',              tag:'Arcade',   category:'arcade'  },
+    { id:'tiny-fishing',                  title:'Tiny Fishing',                tag:'Classic',  category:'classic' },
+    { id:'trace',                         title:'Trace',                       tag:'Puzzle',   category:'puzzle'  },
+    { id:'tunnel-rush',                   title:'Tunnel Rush',                 tag:'Arcade',   category:'arcade'  },
+    { id:'two-ball-3d',                   title:'Two Ball 3D',                 tag:'Arcade',   category:'arcade'  },
+    { id:'vex-3',                         title:'Vex 3',                       tag:'Arcade',   category:'arcade'  },
+    { id:'vex-4',                         title:'Vex 4',                       tag:'Arcade',   category:'arcade'  },
+    { id:'vex-5',                         title:'Vex 5',                       tag:'Arcade',   category:'arcade'  },
+    { id:'vex-6',                         title:'Vex 6',                       tag:'Arcade',   category:'arcade'  },
+    { id:'vex-7',                         title:'Vex 7',                       tag:'Arcade',   category:'arcade'  },
+    { id:'volley-random',                 title:'Volley Random',               tag:'Arcade',   category:'arcade'  },
+    { id:'web-osu',                       title:'Web OSU',                     tag:'Classic',  category:'classic' },
+    { id:'where-is-the-water',            title:'Where Is the Water',          tag:'Puzzle',   category:'puzzle'  },
+    { id:'x-trench-run',                  title:'X-Trench Run',                tag:'Arcade',   category:'arcade'  },
+    { id:'yohoho',                        title:'YoHoHo',                      tag:'Arcade',   category:'arcade'  },
+  ].map(g => ({ ...g, url: BASE + g.id + '/' }));
+
+  const COLORS = ['#1a3a5c','#1a3d2b','#3d1a2b','#2b1a3d','#3d2b1a','#1a3d3d','#3a1a1a','#1e2a1a'];
+  function cardColor(id) { let h=0; for(let c of id) h=(h*31+c.charCodeAt(0))&0xffff; return COLORS[h%COLORS.length]; }
+
+  const thumbHTML = {};
+
+  let activeCategory = 'all';
+
+  function renderGames(list) {
+    const grid = document.getElementById('game-grid');
+    const noResults = document.getElementById('no-results');
+    grid.innerHTML = '';
+    if (!list.length) { noResults.style.display = 'block'; return; }
+    noResults.style.display = 'none';
+    list.forEach(g => {
+      const card = document.createElement('div');
+      card.className = 'game-card';
+      card.onclick = () => openGame(g);
+      card.innerHTML = `
+        <div class="card-thumb">
+          <div style="width:100%;height:100%;background:${cardColor(g.id)};display:flex;align-items:center;justify-content:center;padding:12px;">
+            <span style="font-family:'Fredoka One',cursive;font-size:clamp(13px,2.5vw,17px);color:rgba(255,255,255,0.9);text-align:center;line-height:1.3;">${g.title}</span>
+          </div>
+          <div class="play-overlay">
+            <div class="play-circle">▶</div>
+          </div>
+        </div>
+        <div class="card-info">
+          <div class="card-tag">${g.tag}</div>
+        </div>`;
+      grid.appendChild(card);
+    });
+  }
+
+  function filterGames() {
+    const q = document.getElementById('search-input').value.toLowerCase();
+    const filtered = GAMES.filter(g => {
+      const matchCat = activeCategory === 'all' || g.category === activeCategory;
+      const matchSearch = g.title.toLowerCase().includes(q) || g.tag.toLowerCase().includes(q);
+      return matchCat && matchSearch;
+    });
+    renderGames(filtered);
+  }
+
+  function filterCategory(cat, btn) {
+    activeCategory = cat;
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filterGames();
+  }
+
+  function openGame(game) {
+    document.getElementById('game-title-nav').textContent = game.title;
+    document.getElementById('frame-loading').classList.remove('hidden');
+    document.getElementById('home-view').style.display = 'none';
+    document.getElementById('game-view').style.display = 'flex';
+    window.scrollTo(0, 0);
+    const iframe = document.getElementById('game-iframe');
+    iframe.onload = function() {
+      try { document.getElementById('frame-loading').classList.add('hidden'); } catch(e) {}
+      iframe.focus();
+    };
+    iframe.src = game.url;
+    iframe.addEventListener('mouseenter', () => iframe.focus());
+    iframe.addEventListener('click', () => iframe.focus());
+  }
+
+  function goHome() {
+    document.getElementById('game-view').style.display = 'none';
+    document.getElementById('home-view').style.display = 'block';
+    document.getElementById('game-iframe').src = '';
+    exitFullscreen();
+  }
+
+  function toggleFullscreen() {
+    const wrap = document.getElementById('game-frame-wrap');
+    const btn  = document.getElementById('maximize-btn');
+    const isFs = wrap.classList.toggle('fullscreen');
+    btn.textContent = isFs ? '✕' : '⤢';
+    btn.title = isFs ? 'Exit Fullscreen' : 'Fullscreen';
+    document.body.style.overflow = isFs ? 'hidden' : '';
+  }
+
+  function exitFullscreen() {
+    const wrap = document.getElementById('game-frame-wrap');
+    wrap.classList.remove('fullscreen');
+    document.getElementById('maximize-btn').textContent = '⤢';
+    document.body.style.overflow = '';
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') exitFullscreen();
+  });
+
+  renderGames(GAMES);
+</script>
+</body>
+</html>
